@@ -1,17 +1,11 @@
 package de.juchs.auth.provider.mapper;
 
-import org.keycloak.models.ClientSessionContext;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.ProtocolMapperModel;
-import org.keycloak.models.UserSessionModel;
+import org.keycloak.models.*;
 import org.keycloak.protocol.oidc.mappers.*;
 import org.keycloak.provider.ProviderConfigProperty;
+import org.keycloak.representations.AccessToken;
 import org.keycloak.representations.IDToken;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class SAPLStaticMapper extends AbstractOIDCProtocolMapper implements OIDCAccessTokenMapper,
         OIDCIDTokenMapper, UserInfoTokenMapper {
@@ -81,5 +75,21 @@ public class SAPLStaticMapper extends AbstractOIDCProtocolMapper implements OIDC
         claims.put("age", "32");
         claims.put("birthyear", "1992");
         return claims;
+    }
+
+    @Override
+    public AccessToken transformAccessToken(
+            AccessToken token,
+            ProtocolMapperModel mappingModel,
+            KeycloakSession keycloakSession,
+            UserSessionModel userSession,
+            ClientSessionContext clientSessionCtx) {
+
+        Map<String, Object> claims = token.getOtherClaims();
+        claims.put("User-Agent", keycloakSession.getContext().getRequestHeaders().getRequestHeader("User-Agent"));
+        claims.put("MyClaim", keycloakSession.getContext().getRequestHeaders().getRequestHeader("MyClaim"));
+
+        setClaim(token, mappingModel, userSession, keycloakSession, clientSessionCtx);
+        return token;
     }
 }
