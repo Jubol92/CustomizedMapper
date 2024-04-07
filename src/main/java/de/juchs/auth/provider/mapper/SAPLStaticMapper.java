@@ -13,19 +13,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class CustomFixedValueMapper extends AbstractOIDCProtocolMapper implements OIDCAccessTokenMapper,
+public class SAPLStaticMapper extends AbstractOIDCProtocolMapper implements OIDCAccessTokenMapper,
         OIDCIDTokenMapper, UserInfoTokenMapper {
 
-    public static final String PROVIDER_ID = "custom-fixed-value-mapper";
+    public static final String PROVIDER_ID = "demo-sapl-mapper";
     private static final String PREFIX_CONFIG = "claim.prefix";
 
     private static final List<ProviderConfigProperty> configProperties = new ArrayList<>();
 
     static {
         OIDCAttributeMapperHelper.addTokenClaimNameConfig(configProperties);
-        OIDCAttributeMapperHelper.addIncludeInTokensConfig(configProperties, CustomFixedValueMapper.class);
+        OIDCAttributeMapperHelper.addIncludeInTokensConfig(configProperties, SAPLStaticMapper.class);
         ProviderConfigProperty prefixProperty = new ProviderConfigProperty();
         prefixProperty.setName(PREFIX_CONFIG);
+
+        // Sets a prefix like SAPL in the token claim
         prefixProperty.setLabel("Claim Prefix");
         prefixProperty.setType(ProviderConfigProperty.STRING_TYPE);
         prefixProperty.setHelpText("Prefix to be added to the claims from the other application.");
@@ -39,12 +41,12 @@ public class CustomFixedValueMapper extends AbstractOIDCProtocolMapper implement
 
     @Override
     public String getDisplayType() {
-        return "Custom Token Mapper";
+        return "Demo SAPL Mapper";
     }
 
     @Override
     public String getHelpText() {
-        return "Just a random mapper";
+        return "Demo mapper to add static content to a claim";
     }
 
     @Override
@@ -73,6 +75,8 @@ public class CustomFixedValueMapper extends AbstractOIDCProtocolMapper implement
     // Static method to return claims for testing purposes
     private static Map<String, String> getClaimsFromOtherApplication() {
         Map<String, String> claims = new HashMap<>();
+
+        // Just a list of random token claims
         claims.put("username", "jubol92");
         claims.put("age", "32");
         claims.put("birthyear", "1992");

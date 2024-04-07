@@ -63,7 +63,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>de.juchs.auth.provider.mapper.CustomFixedValueMapper</mainClass>
+                            <mainClass>de.juchs.auth.provider.mapper.SAPLStaticMapper</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
