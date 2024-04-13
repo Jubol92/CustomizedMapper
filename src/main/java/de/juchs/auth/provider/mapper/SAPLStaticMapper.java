@@ -1,5 +1,6 @@
 package de.juchs.auth.provider.mapper;
 
+import jakarta.ws.rs.core.HttpHeaders;
 import org.keycloak.models.*;
 import org.keycloak.protocol.oidc.mappers.*;
 import org.keycloak.provider.ProviderConfigProperty;
@@ -86,10 +87,41 @@ public class SAPLStaticMapper extends AbstractOIDCProtocolMapper implements OIDC
             ClientSessionContext clientSessionCtx) {
 
         Map<String, Object> claims = token.getOtherClaims();
-        claims.put("User-Agent", keycloakSession.getContext().getRequestHeaders().getRequestHeader("User-Agent"));
-        claims.put("MyClaim", keycloakSession.getContext().getRequestHeaders().getRequestHeader("MyClaim"));
+        Map<String, String> headerClaims = getClaimsFromHeader(keycloakSession.getContext().getRequestHeaders());
+        claims.putAll(headerClaims);
 
         setClaim(token, mappingModel, userSession, keycloakSession, clientSessionCtx);
         return token;
+    }
+
+    // Method to extract claims from the request header
+    private Map<String, String> getClaimsFromHeader(HttpHeaders httpHeaders) {
+        Map<String, String> claims = new HashMap<>();
+        // List of tuples containing prefixes and corresponding claim names
+        List<Map.Entry<String, String>> prefixClaimPairs = Arrays.asList(
+                tuple("action", "action"),
+                tuple("subject", "subject")
+        );
+        for (Map.Entry<String, String> pair : prefixClaimPairs) {
+            String prefix = pair.getKey();
+            String claimName = pair.getValue();
+            for (String headerName : httpHeaders.getRequestHeaders().keySet()) {
+                // Check if the header name starts with the current prefix
+                if (headerName.startsWith(prefix)) {
+                    List<String> headerValues = httpHeaders.getRequestHeader(headerName);
+                    if (headerValues != null && !headerValues.isEmpty()) {
+                        // Use the corresponding claim name for this prefix
+                        String claimValue = headerValues.get(0); // Assuming only one value per claim
+                        claims.put(claimName, claimValue);
+                    }
+                }
+            }
+        }
+        return claims;
+    }
+
+    // Method to create a tuple of two values
+    private static <L, R> Map.Entry<L, R> tuple(L left, R right) {
+        return new AbstractMap.SimpleEntry<>(left, right);
     }
 }
